@@ -3,6 +3,7 @@ package com.pluralsight;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Main2 {
     public static void main(String[] args) {
@@ -27,44 +28,40 @@ public class Main2 {
         System.out.print("Enter a first or last name to search: ");
         String searchName = scanner.nextLine();
 
-        // Find matches
-        List<Person> matchingPeople = new ArrayList<>();
-        for (Person person : people) {
-            if (person.getFirstName().equalsIgnoreCase(searchName) ||
-                    person.getLastName().equalsIgnoreCase(searchName)) {
-                matchingPeople.add(person);
-            }
-        }
+        List<Person> matchingPeople = people.stream()
+                .filter( person ->  person.getFirstName().equalsIgnoreCase(searchName) ||
+                                    person.getLastName().equalsIgnoreCase(searchName))
+                .collect(Collectors.toList());
+
 
         // Display matches
         if (matchingPeople.isEmpty()) {
             System.out.println("No matches found for the name: " + searchName);
         } else {
             System.out.println("Matching people:");
-            for (Person person : matchingPeople) {
-                System.out.println(person);
-            }
+            matchingPeople.forEach( person -> System.out.println(person));
         }
 
         // Step 3: Calculate and display average age, oldest and youngest person
         if (!people.isEmpty()) {
-            int totalAge = 0;
-            int oldestAge = people.get(0).getAge();
+
+            int totalAge = people.stream()
+                    .map( person -> person.getAge())
+                    .reduce(0, (previousOutput, age) -> previousOutput + age );
+
+            long count = people.stream().count();
+
+            double averageAge = (double) totalAge / count;
+
+            int oldestAge = people.stream()
+                    .map( person -> person.getAge())
+                    .reduce(0, (previousResult, age) -> ( previousResult < age) ? previousResult : age );
+
             int youngestAge = people.get(0).getAge();
 
-            for (Person person : people) {
-                int age = person.getAge();
-                totalAge += age;
 
-                if (age > oldestAge) {
-                    oldestAge = age;
-                }
-                if (age < youngestAge) {
-                    youngestAge = age;
-                }
-            }
 
-            double averageAge = (double) totalAge / people.size();
+
             System.out.printf("Average Age: %.2f%n", averageAge);
             System.out.println("Oldest Age: " + oldestAge);
             System.out.println("Youngest Age: " + youngestAge);
